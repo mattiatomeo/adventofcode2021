@@ -1,29 +1,45 @@
-def hor_depth_product(measures):
+def find_position_1(movements):
+    horizontal = 0
+    depth = 0
+
+    for direction, amount in movements:
+        if direction == "forward":
+            horizontal += amount
+        elif direction == "down":
+            depth += amount
+        else:  # "up"
+            depth -= amount
+
+    return horizontal * depth
+
+
+def find_position_2(movements):
     horizontal = 0
     depth = 0
     aim = 0
 
-    for direction, dist in measures:
+    for direction, amount in movements:
         if direction == "forward":
-            horizontal += dist
-            depth += aim * dist
+            horizontal += amount
+            depth += aim * amount
         elif direction == "down":
-            aim += dist
+            aim += amount
         else:  # "up"
-            aim -= dist
+            aim -= amount
 
     return horizontal * depth
 
 
 def main():
     def split_row(row):
-        direction, dist = row.split(" ")
-        return direction, int(dist)
+        direction, amount = row.split(" ")
+        return direction, int(amount)
 
     with open("input.txt", "r") as fp:
-        measures = [split_row(value) for value in fp.readlines()]
+        movements = [split_row(value) for value in fp.readlines()]
 
-    print(hor_depth_product(measures))
+    assert find_position_1(movements) == 2322630
+    assert find_position_2(movements) == 2105273490
 
 
 if __name__ == '__main__':
