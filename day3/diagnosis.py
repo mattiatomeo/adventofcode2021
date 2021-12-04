@@ -65,6 +65,7 @@ def step_2(diagnosis_records: list) -> int:
 
 if __name__ == '__main__':
     diagnosis = read_diagnosis_records()
-    print(step_1(diagnosis))
-    print(step_2(diagnosis))
+
+    assert step_1(diagnosis) == 3242606
+    assert step_2(diagnosis) == 4856080
 
