@@ -26,9 +26,9 @@ class Point:
         return self.x == other.x and self.y == other.y
 
 
-class Matrix:
+class Grid:
     def __init__(self, size: int):
-        self.mtx = np.full((size, size), 0)
+        self.matrix = np.full((size, size), 0)
 
     def draw_line(self, segment: Segment):
         if segment[0].x == segment[1].x:
@@ -44,7 +44,7 @@ class Matrix:
         x_start = min(segment[0].x, segment[1].x)
         x_end = max(segment[0].x, segment[1].x)
 
-        self.mtx[segment[0].y, x_start:x_end + 1] += 1
+        self.matrix[segment[0].y, x_start:x_end + 1] += 1
 
     def draw_on_y_axis(self, segment: Segment):
         assert segment[0].x == segment[1].x
@@ -52,36 +52,28 @@ class Matrix:
         y_start = min(segment[0].y, segment[1].y)
         y_end = max(segment[0].y, segment[1].y)
 
-        self.mtx[y_start:y_end + 1, segment[0].x] += 1
+        self.matrix[y_start:y_end + 1, segment[0].x] += 1
 
     def draw_on_diagonal(self, segment: Segment):
-        x_step = 1 if segment[0].x < segment[1].x else -1
-        y_step = 1 if segment[0].y < segment[1].y else -1
+        x_step_direction = 1 if segment[0].x < segment[1].x else -1
+        y_step_direction = 1 if segment[0].y < segment[1].y else -1
 
-        step = Point(x_step, y_step)
-        curr = Point(*segment[0].coords())
-        end = Point(*segment[1].coords()) + Point(x_step, y_step)
-        while curr != end:
-            self.mtx[curr.y, curr.x] += 1
-            curr += step
+        self.matrix[
+            range(segment[0].y, segment[1].y + y_step_direction, y_step_direction),
+            range(segment[0].x, segment[1].x + x_step_direction, x_step_direction)
+        ] += 1
 
     def get_num_of_interception(self) -> int:
-        flatten = self.mtx.flatten()
+        flatten = self.matrix.flatten()
         return flatten[flatten > 1].shape[0]
 
     def reset(self):
-        self.mtx.fill(0)
+        self.matrix.fill(0)
 
 
-def read_segments(keep_only_straight_lines: bool) -> List[Segment]:
+def read_segments() -> List[Segment]:
     def str_to_point(point_str: str) -> Point:
         return Point(*[int(coord) for coord in point_str.split(',')])
-
-    def is_straight(segment: Segment) -> bool:
-        return (
-            segment[0].x == segment[1].x
-            or segment[0].y == segment[1].y
-        )
 
     def parse_row(line: str) -> Segment:
         points = line.strip().split(' -> ')
@@ -96,21 +88,37 @@ def read_segments(keep_only_straight_lines: bool) -> List[Segment]:
     with open('input.txt') as f:
         return [
             segment for segment in read_str_segments(f.readlines())
-            if not keep_only_straight_lines or is_straight(segment)
         ]
 
 
+def is_straight(segment: Segment) -> bool:
+    return (
+        segment[0].x == segment[1].x
+        or segment[0].y == segment[1].y
+    )
+
+
+def create_grid(segments: List[Segment]) -> Grid:
+    def max_axis_value(seg: Segment):
+        return max((seg[0].x, seg[0].y, seg[1].x, seg[1].y))
+
+    shape = max(map(max_axis_value, segments)) + 1
+
+    return Grid(shape)
+
+
 if __name__ == '__main__':
-    mtx = Matrix(1000)
+    hydrothermal_vents = read_segments()
+    grid = create_grid(hydrothermal_vents)
 
-    for seg in read_segments(True):
-        mtx.draw_line(seg)
+    for seg in (seg for seg in hydrothermal_vents if is_straight(seg)):
+        grid.draw_line(seg)
 
-    assert mtx.get_num_of_interception() == 6666
+    assert grid.get_num_of_interception() == 6666
 
-    mtx.reset()
+    grid.reset()
 
-    for seq in read_segments(False):
-        mtx.draw_line(seq)
+    for seg in hydrothermal_vents:
+        grid.draw_line(seg)
 
-    assert mtx.get_num_of_interception() == 19081
+    assert grid.get_num_of_interception() == 19081
