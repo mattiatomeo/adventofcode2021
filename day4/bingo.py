@@ -11,12 +11,6 @@ RowPosition = int
 ColPosition = int
 
 
-class BingoWinAxis(enum.Enum):
-    NONE = auto()
-    ROW = auto()
-    COL = auto()
-
-
 class Board:
     def __init__(self, board_numbers: np.array):
         self.numbers = board_numbers
