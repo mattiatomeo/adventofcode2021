@@ -3,14 +3,14 @@ from typing import Set
 from collections import namedtuple
 
 
-def read_input(file_path: str) -> np.array:
+def read_input(file_path: str) -> np.ndarray:
     with open(file_path, 'r') as f:
         return np.array([
             list(map(int, row.strip())) for row in f.readlines()
         ])
 
 
-def find_low_points(heatmap: np.array):
+def find_low_points(heatmap: np.ndarray):
     row_count, col_count = heatmap.shape
     for row in range(row_count):
         start_row = max(0, row - 1)
@@ -24,7 +24,7 @@ def find_low_points(heatmap: np.array):
                 yield row, col
 
 
-def step_1(heatmap: np.array) -> int:
+def step_1(heatmap: np.ndarray) -> int:
     low_points_pos = list(find_low_points(heatmap))
     pos = (
         np.array([x for x, _ in low_points_pos]),
@@ -37,7 +37,7 @@ def step_1(heatmap: np.array) -> int:
 HeatMapPosition = namedtuple('HeatMapPosition', ['x', 'y'])
 
 
-def step_2(heatmap: np.array) -> int:
+def step_2(heatmap: np.ndarray) -> int:
     rows, cols = heatmap.shape
     checked_pos = set()
 

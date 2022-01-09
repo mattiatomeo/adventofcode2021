@@ -12,7 +12,7 @@ ColPosition = int
 
 
 class Board:
-    def __init__(self, board_numbers: np.array):
+    def __init__(self, board_numbers: np.ndarray):
         self.numbers = board_numbers
         self.unmarked = set(board_numbers.flatten())
 

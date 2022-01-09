@@ -3,18 +3,18 @@ import numpy as np
 from typing import Tuple, List
 
 
-def read_octopuses(file_path: str) -> np.array:
+def read_octopuses(file_path: str) -> np.ndarray:
     with open(file_path, 'r') as f:
         return np.array([
             list(map(int, row.strip())) for row in f.readlines()
         ])
 
 
-def propagate_energy_increase(octopuses_state: np.array):
+def propagate_energy_increase(octopuses_state: np.ndarray):
     row, col = octopuses_state.shape
     covered_positions = set()
 
-    def select_next_propagation_points(curr_propagation_state: np.array) -> List[Tuple[int, int]]:
+    def select_next_propagation_points(curr_propagation_state: np.ndarray) -> List[Tuple[int, int]]:
         candidates = np.argwhere(curr_propagation_state >= 10)
 
         return list(
@@ -39,7 +39,7 @@ def propagate_energy_increase(octopuses_state: np.array):
         flashed_pos = select_next_propagation_points(octopuses_state)
 
 
-def count_flashes_in_step(initial_octopuses_state: np.array, step: int) -> np.array:
+def count_flashes_in_step(initial_octopuses_state: np.ndarray, step: int) -> np.ndarray:
     curr_state = initial_octopuses_state.copy()
 
     total_flashes = 0
@@ -54,11 +54,11 @@ def count_flashes_in_step(initial_octopuses_state: np.array, step: int) -> np.ar
     return total_flashes
 
 
-def get_first_step_all_flashes(initial_octopuses_state: np.array) -> int:
+def get_first_step_all_flashes(initial_octopuses_state: np.ndarray) -> int:
     curr_step = 0
     curr_state = initial_octopuses_state.copy()
 
-    def all_octopuses_flashes(curr_octopuses_state: np.array) -> bool:
+    def all_octopuses_flashes(curr_octopuses_state: np.ndarray) -> bool:
         return not np.any(curr_octopuses_state)
 
     while not all_octopuses_flashes(curr_state):

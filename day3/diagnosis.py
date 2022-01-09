@@ -6,7 +6,7 @@ def read_diagnosis_records():
         return [row.strip() for row in f.readlines()]
 
 
-def binary_to_int(binary_repr: np.array) -> int:
+def binary_to_int(binary_repr: np.ndarray) -> int:
     power_of_two = np.array([2 ** pos for pos in reversed(range(binary_repr.shape[0]))])
 
     return np.sum(binary_repr * power_of_two)
@@ -33,7 +33,7 @@ def step_1(diagnosis_records: list) -> int:
 
 
 def step_2(diagnosis_records: list) -> int:
-    def calculate_rating(records: np.array, filter_on_most_common: bool) -> int:
+    def calculate_rating(records: np.ndarray, filter_on_most_common: bool) -> int:
         rating = np.array(records)
         num_of_bits = records.shape[1]
         for pos in range(num_of_bits):
