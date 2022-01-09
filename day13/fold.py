@@ -98,10 +98,7 @@ def fold_left(paper: np.ndarray, pos: int) -> np.ndarray:
                 col, - row - 1
             )
             if second_half[idx] == '#':
-                try:
-                    folded_paper[position_to_update] = '#'
-                except IndexError:
-                    print("really?")
+                folded_paper[position_to_update] = '#'
     
     return folded_paper
 
