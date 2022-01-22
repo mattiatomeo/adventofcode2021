@@ -1,25 +1,17 @@
-import array
-from collections import Counter
-import functools
-from tempfile import template
+from collections import defaultdict
 from typing import Dict, Tuple
-from functools import partial
 
-
-PolymerFormula = array.array
+PolymerFormula = Tuple
 InsertionRule = Dict[Tuple[str, str], str]
-
-
-init_formula = functools.partial(PolymerFormula, 'B')
 
 
 def read_input(filepath: str) -> Tuple[PolymerFormula, InsertionRule]:
     def parse_rule(row):
         monomer_pair, monomer_to_insert = row.split(' -> ')
-        return tuple(map(ord, monomer_pair)), ord(monomer_to_insert)
+        return tuple(monomer_pair), monomer_to_insert
     
     with open(filepath, 'r') as fp:
-        template = init_formula(map(ord, fp.readline().strip()))
+        template = list(fp.readline().strip())
 
         fp.readline()  # Skip empty row
 
@@ -32,64 +24,50 @@ def read_input(filepath: str) -> Tuple[PolymerFormula, InsertionRule]:
         return template, rules
 
 
+def polymerization(template: PolymerFormula, rules: InsertionRule, step: int) -> int:
+    pairs = defaultdict(int)
 
-def polymerization(template: PolymerFormula, rules: InsertionRule, step: int) -> PolymerFormula:
-    result = template
+    for couple in zip(template, template[1:]):
+        pairs[couple] += 1
     
+    def execute_next_step(last_step_result):
+        step_result = defaultdict(int)
+        for pair, count in last_step_result.items():
+            try:
+                monomer = rules[pair]
+                step_result[pair[0], monomer] += count 
+                step_result[monomer, pair[1]] += count
+            except KeyError:
+                step_result[pair] = count
+        
+        return step_result
+
     for _ in range(step):
-        curr_formula = init_formula([result[0]])
-
-        for pos in range(1, len(result)):
-            monomer_pair = (result[pos - 1], result[pos])
-
-            if monomer_pair in rules:
-                curr_formula.append(rules[monomer_pair])
-            
-            curr_formula.append(monomer_pair[1])
-
-        result = curr_formula
+        pairs = execute_next_step(pairs)
     
-    return result
+    ch_counter = defaultdict(int)
 
-
-def print_formula(formula: PolymerFormula):
-    print(''.join(map(chr, formula)))
-
-
-def start_process(template: PolymerFormula, rules: InsertionRule, step: int) -> int:
-    monomer_count = Counter([template[1]])
-
-    @functools.lru_cache
-    def sequence_pair(first: int, second: int) -> Dict[str, int]:
-        current = init_formula([first, second])
-        polymer = polymerization(current, rules, step)
-
-        occurrences = Counter(polymer)
-        occurrences[current[0]] -= 1
-
-        return occurrences
-
-    for pos in range(0, len(template) - 1):
-        occurrences = sequence_pair(template[pos], template[pos + 1])
-
-        monomer_count.update(occurrences)
+    for (first_monomer, _), count in pairs.items():
+        ch_counter[first_monomer] += count
     
-    sorted_by_occurrence = monomer_count.most_common()
+    ch_counter[template[-1]] += 1
 
-    most_occurrent = sorted_by_occurrence[0][1]
-    least_occurrent = sorted_by_occurrence[-1][1]
+    max_occurrence = max(ch_counter.values())
+    min_occurrence = min(ch_counter.values())
 
-    return most_occurrent - least_occurrent
-
+    return max_occurrence - min_occurrence
 
 def main():
     example = read_input('input_test.txt')
     
     polymer_input = read_input('input.txt')
 
-    assert start_process(*example, 10) == 1588
-    assert start_process(*polymer_input, 10) == 3213
+    assert polymerization(*example, 10) == 1588
+    assert polymerization(*polymer_input, 10) == 3213
+    
+    assert polymerization(*example, 40) == 2188189693529
+    assert polymerization(*polymer_input, 40) == 3711743744429
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()
