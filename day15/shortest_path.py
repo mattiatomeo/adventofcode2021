@@ -1,12 +1,9 @@
-from ast import For
 from dataclasses import dataclass
 import itertools
 import math
 from typing import Iterator, List
+
 from pip import main
-
-
-Path = List[int]
 
 
 @dataclass(frozen=True)
@@ -57,7 +54,7 @@ def read_map(filepath: str) -> RiskMap:
         ])
 
 
-def get_shortest_risk(risk_map: RiskMap) -> Path:
+def get_shortest_risk(risk_map: RiskMap) -> int:
     start = CavePosition(0, 0)
 
     risk_from_start = {start: 0}
