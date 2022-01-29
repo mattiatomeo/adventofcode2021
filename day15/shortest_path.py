@@ -86,6 +86,30 @@ def read_map(filepath: str) -> RiskMap:
         ])
 
 
+def read_and_extend_map(filepath: str) -> RiskMap:
+    with open(filepath, 'r') as fp:
+        loaded_map = [
+            list(map(int, row.strip())) for row in fp.readlines()
+        ]
+
+        initial_row_count = len(loaded_map)
+        for row in range(initial_row_count):
+            for idx in range(initial_row_count, initial_row_count * 5):
+                base = loaded_map[row][idx - initial_row_count]
+                value = base + 1 if base < 9 else 1
+                loaded_map[row].append(value)
+
+        for row in range(initial_row_count, initial_row_count * 5):
+            loaded_map.append([])
+            for col in range(initial_row_count * 5):
+                base = loaded_map[row - initial_row_count][col]
+                value = base + 1 if base < 9 else 1
+                loaded_map[row].append(value)
+
+        return RiskMap(loaded_map)
+
+
+
 def get_shortest_risk(risk_map: RiskMap) -> int:
     start = CavePosition(0, 0)
 
@@ -129,6 +153,12 @@ def main():
 
     assert get_shortest_risk(test_risk_map) == 40
     assert get_shortest_risk(risk_map) == 702
+
+    extended_test_risk_map = read_and_extend_map('input_test.txt')
+    extended_risk_map = read_and_extend_map('input.txt')
+    assert get_shortest_risk(extended_test_risk_map) == 315
+    assert get_shortest_risk(extended_risk_map) == 2955
+
 
 if __name__ == "__main__":
     main()
