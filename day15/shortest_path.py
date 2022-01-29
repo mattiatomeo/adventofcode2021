@@ -1,15 +1,50 @@
-from dataclasses import dataclass
+from bisect import bisect
+from dataclasses import dataclass, field
 import itertools
 import math
 from typing import Iterator, List
-
-from pip import main
 
 
 @dataclass(frozen=True)
 class CavePosition:
     row: int
     col: int
+
+
+@dataclass(frozen=True)
+class PriorityQueueEntry:
+    position: CavePosition
+    risk_from_start: int
+
+
+@dataclass
+class PriorityQueue:
+    items: List[PriorityQueueEntry] = field(init=False, default_factory=list)
+
+    def pop_first(self) -> PriorityQueueEntry:
+        return self.items.pop(0)
+
+    def add_item(self, entry: PriorityQueueEntry):
+        pos = bisect(self.items, entry.risk_from_start, key=lambda item: item.risk_from_start)
+
+        self.items.insert(pos, entry)
+
+    def update_risk_level(self, to_update: CavePosition, new_risk_level: int):
+        self.drop_if_exists(to_update)
+        self.add_item(PriorityQueueEntry(to_update, new_risk_level))
+
+    def drop_if_exists(self, to_remove: CavePosition):
+        for pos in range(len(self.items)):
+            if self.items[pos].position == to_remove:
+                break
+
+        if pos < len(self.items):
+            del self.items[pos]
+
+
+    @property
+    def empty(self) -> bool:
+        return len(self.items) == 0
 
 
 @dataclass(frozen=True)
@@ -59,30 +94,33 @@ def get_shortest_risk(risk_map: RiskMap) -> int:
 
     risk_from_start = {start: 0}
 
-    vertex_to_traverse = {}
+    vertex_queue = PriorityQueue()
+    vertex_to_traverse = set()
 
     for position in risk_map.get_all_positions():
         if position != start:
             risk_from_start[position] = math.inf
+            vertex_to_traverse.add(position)
 
-        vertex_to_traverse[position] = risk_from_start[position]
+        vertex_queue.add_item(PriorityQueueEntry(position, risk_from_start[position]))
 
-    while len(vertex_to_traverse) != 0:
-        curr_pos = min(vertex_to_traverse.keys(), key=vertex_to_traverse.__getitem__)
 
-        del vertex_to_traverse[curr_pos]
+    while not vertex_queue.empty:
+        curr_pos = vertex_queue.pop_first()
 
-        for neighbor in (pos for pos in risk_map.get_neighbors(curr_pos) if pos in vertex_to_traverse):
+        curr_cave = curr_pos.position
+        for neighbor in (pos for pos in risk_map.get_neighbors(curr_cave) if pos in vertex_to_traverse):
             if neighbor == start:
                 continue
 
-            risk_from_curr = risk_from_start[curr_pos] + risk_map.get_risk_level(neighbor)
+            risk_from_curr = risk_from_start[curr_cave] + risk_map.get_risk_level(neighbor)
 
             if risk_from_curr < risk_from_start[neighbor]:
                 risk_from_start[neighbor] = risk_from_curr
 
-                vertex_to_traverse[neighbor] = risk_from_curr
+                vertex_queue.update_risk_level(neighbor, risk_from_curr)
 
+            vertex_to_traverse.remove(neighbor)
 
     destination = CavePosition(risk_map.shape[0] - 1, risk_map.shape[1] -1)
     return risk_from_start[destination]
