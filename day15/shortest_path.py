@@ -36,10 +36,7 @@ class PriorityQueue:
     def drop_if_exists(self, to_remove: CavePosition):
         for pos in range(len(self.items)):
             if self.items[pos].position == to_remove:
-                break
-
-        if pos < len(self.items):
-            del self.items[pos]
+                del self.items[pos]
 
 
     @property
@@ -102,8 +99,8 @@ def get_shortest_risk(risk_map: RiskMap) -> int:
             risk_from_start[position] = math.inf
             vertex_to_traverse.add(position)
 
-        vertex_queue.add_item(PriorityQueueEntry(position, risk_from_start[position]))
 
+    vertex_queue.add_item(PriorityQueueEntry(start, 0))
 
     while not vertex_queue.empty:
         curr_pos = vertex_queue.pop_first()
@@ -124,6 +121,7 @@ def get_shortest_risk(risk_map: RiskMap) -> int:
 
     destination = CavePosition(risk_map.shape[0] - 1, risk_map.shape[1] -1)
     return risk_from_start[destination]
+
 
 def main():
     test_risk_map = read_map('input_test.txt')
